@@ -1,0 +1,81 @@
+.editorContainer {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-height) - 48px);
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.toolbarGroup {
+  display: flex;
+  gap: 4px;
+  padding-right: 8px;
+  border-right: 1px solid var(--border);
+}
+
+.toolbarGroup:last-of-type {
+  border-right: none;
+}
+
+.toolbarButton {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  min-width: 32px;
+  transition: all 0.15s ease;
+}
+
+.toolbarButton:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.toolbarButton.active {
+  background: var(--accent);
+  color: white;
+}
+
+.saveStatus {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.saved {
+  color: var(--success);
+}
+
+.saving {
+  color: var(--warning);
+}
+
+.unsaved {
+  color: var(--text-secondary);
+}
+
+.editor {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg-secondary);
+}
+
+.editor .ProseMirror {
+  min-height: 100%;
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+}

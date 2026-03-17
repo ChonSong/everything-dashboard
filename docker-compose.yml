@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # LiteLLM proxy for unified LLM interface
+  litellm:
+    image: ghcr.io/berriai/litellm:main
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=sqlite:///data.db
+      - LITELLM_MASTER_KEY=sk-12345678
+    volumes:
+      - litellm_data:/data
+    profiles:
+      - agent
+
+  # Dashboard Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATA_DIR=/app/data/markdown
+    volumes:
+      - markdown_data:/app/data/markdown
+    depends_on:
+      - litellm
+    profiles:
+      - backend
+
+  # Dashboard Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3001
+    depends_on:
+      - backend
+    profiles:
+      - frontend
+
+  # Agent Daemon (future phases)
+  agent-daemon:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
+    environment:
+      - LITELLM_BASE_URL=http://litellm:4000
+      - LITELLM_API_KEY=sk-12345678
+    depends_on:
+      - litellm
+    volumes:
+      - agent_data:/app/data
+    profiles:
+      - agent
+
+volumes:
+  litellm_data:
+  markdown_data:
+  agent_data:
+
+networks:
+  default:
+    name: everything-dashboard
