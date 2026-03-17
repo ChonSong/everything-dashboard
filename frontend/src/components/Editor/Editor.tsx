@@ -3,13 +3,13 @@ import StarterKit from '@tiptap/starter-kit'
 import Highlight from '@tiptap/extension-highlight'
 import Link from '@tiptap/extension-link'
 import Placeholder from '@tiptap/extension-placeholder'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import styles from './Editor.module.css'
 
 export function Editor() {
-  const { fileId } = useParams()
-  const [fileName, setFileName] = useState('Untitled')
+  const { fileId: _fileId } = useParams()
+  const [fileName] = useState('Untitled')
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved')
 
   const editor = useEditor({
@@ -41,6 +41,7 @@ export function Editor() {
 
   return (
     <div className={styles.editorContainer}>
+      <div className={styles.editorTitle}>{fileName || 'Untitled'}</div>
       <div className={styles.toolbar}>
         <div className={styles.toolbarGroup}>
           <button
