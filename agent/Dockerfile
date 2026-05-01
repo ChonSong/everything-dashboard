@@ -1,16 +1,19 @@
-# Agent Daemon - Future Phase
-# This will contain the Python agent core with:
-# - Nanobot
-# - Stripped OpenHands Runtime
-# - LiteLLM integration
-
+# Agent Core — Python nanobot sidecar for everything-dashboard
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Placeholder for agent implementation
-# Will be expanded in Phase 2-3
+# Install nanobot from source + runtime deps
+COPY nanobot/ ./nanobot/
+COPY core/ ./core/
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -e ./nanobot \
+    && pip install --no-cache-dir aiohttp httpx
 
-EXPOSE 3002
+# Expose the nanobot serve API port
+EXPOSE 8001
 
-CMD ["echo", "Agent daemon - Phase 2-3 implementation pending"]
+# Workspace directory
+RUN mkdir -p /tmp/agent-workspace
+
+CMD ["python3", "-m", "nanobot", "serve", "--port", "8001", "--host", "0.0.0.0", "--workspace", "/tmp/agent-workspace"]

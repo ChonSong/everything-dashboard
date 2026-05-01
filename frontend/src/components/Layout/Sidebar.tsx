@@ -4,6 +4,8 @@ import styles from './Sidebar.module.css'
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: '◫' },
+  { path: '/agent', label: 'Agent', icon: '🤖' },
+  { path: '/agent/observe', label: 'Observability', icon: '📊' },
   { path: '/editor', label: 'Editor', icon: '✎' },
   { path: '/settings', label: 'Settings', icon: '⚙' },
 ]

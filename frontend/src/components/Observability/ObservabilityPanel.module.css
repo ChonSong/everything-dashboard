@@ -1,0 +1,137 @@
+.panel {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.header h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+  color: #e6edf3;
+}
+
+.driftScore {
+  font-size: 12px;
+  color: #3fb950;
+}
+
+.metrics {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metricLabel {
+  font-size: 10px;
+  color: #484f58;
+  text-transform: uppercase;
+}
+
+.metricValue {
+  font-size: 13px;
+  color: #e6edf3;
+}
+
+.circuitOpen {
+  color: #f85149;
+}
+
+.circuitOk {
+  color: #3fb950;
+}
+
+.eventFeed {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feedHeader {
+  font-size: 11px;
+  color: #484f58;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  position: sticky;
+  top: 0;
+  background: #0d1117;
+  padding: 2px 0;
+}
+
+.eventRow {
+  display: flex;
+  gap: 8px;
+  padding: 3px 4px;
+  border-radius: 4px;
+  font-size: 11px;
+  align-items: center;
+}
+
+.eventRow:hover {
+  background: #161b22;
+}
+
+.eventType {
+  color: #58a6ff;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.eventTime {
+  color: #484f58;
+  flex-shrink: 0;
+}
+
+.eventTool {
+  color: #7ee787;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eventDrift {
+  color: #7ee787;
+  margin-left: auto;
+}
+
+.event-drift .eventType {
+  color: #d29922;
+}
+
+.event-circuit_open .eventType {
+  color: #f85149;
+}
+
+.event-tool_call .eventType {
+  color: #a371f7;
+}
+
+.loading,
+.empty {
+  font-size: 12px;
+  color: #484f58;
+  text-align: center;
+  padding: 20px;
+}

@@ -3,6 +3,8 @@ import { Layout } from './components/Layout/Layout'
 import { Dashboard } from './components/Dashboard/Dashboard'
 import { Editor } from './components/Editor/Editor'
 import { Settings } from './components/Settings/Settings'
+import { Chat } from './components/Chat/Chat'
+import { ObservabilityPanel } from './components/Observability/ObservabilityPanel'
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
           <Route path="editor" element={<Editor />} />
           <Route path="editor/:fileId" element={<Editor />} />
           <Route path="settings" element={<Settings />} />
+          <Route path="agent" element={<Chat />} />
+          <Route path="agent/observe" element={<ObservabilityPanel />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -1,0 +1,4 @@
+# Python agent core dependencies
+-e ../nanobot
+aiohttp>=3.9.0
+httpx>=0.25.0
