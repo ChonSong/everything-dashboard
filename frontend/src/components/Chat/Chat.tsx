@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { socket } from '../../lib/socket'
+import { socket, type HermesOutputEvent, type HermesToolCall } from '../../lib/socket'
 import styles from './Chat.module.css'
 
 interface Message {
@@ -17,45 +17,82 @@ export function Chat() {
   const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  // Track the last assistant message id so we can stream into it
+  const lastAssistantIdRef = useRef<string | null>(null)
 
   // Connect socket on mount
   useEffect(() => {
     socket.connect()
 
-    socket.on('agent:output', (data: any) => {
-      if (data?.type === 'start') return
+    // Hermes 'start' event — agent is beginning a response
+    socket.on('start', (data: any) => {
+      console.log('[chat] session start:', data)
+    })
+
+    // Hermes 'output' event — streaming text and/or tool calls from Hermes Agent
+    // Hermes payload shape:
+    // {
+    //   content: string,           // streamed text content (may be incremental)
+    //   tool_calls?: Array<{       // tool calls being made
+    //     name: string,
+    //     arguments: Record<string, unknown>,
+    //     id: string
+    //   }>,
+    //   tool_results?: Array<{     // results of previously-called tools
+    //     tool_call_id: string,
+    //     result: string,
+    //     success: boolean
+    //   }>,
+    //   reasoning?: string         // optional reasoning trace
+    // }
+    socket.on('output', (data: HermesOutputEvent) => {
       setMessages((prev) => {
         const last = prev[prev.length - 1]
-        if (last?.role === 'assistant' && data?.content) {
-          // Streaming update
+
+        // If the last message is an assistant message, stream into it
+        if (last?.role === 'assistant' && last.id === lastAssistantIdRef.current) {
+          // Merge tool_calls if present (don't lose previously shown tools)
+          const existingTools = last.tools_used ?? []
+          const newToolNames = data.tool_calls?.map((tc) => tc.name) ?? []
+          const mergedTools = [...new Set([...existingTools, ...newToolNames])]
+
           return prev.map((m, i) =>
             i === prev.length - 1
-              ? { ...m, content: m.content + (data.content || '') }
+              ? {
+                  ...m,
+                  content: m.content + (data.content ?? ''),
+                  tools_used: mergedTools.length > 0 ? mergedTools : m.tools_used,
+                }
               : m
           )
-        } else if (data?.content) {
-          return [...prev, {
-            id: Date.now().toString(),
-            role: 'assistant' as const,
-            content: data.content,
-            tools_used: data.tools_used,
-            timestamp: new Date(),
-          }]
         }
-        return prev
+
+        // Otherwise create a new assistant message
+        const assistantMsg: Message = {
+          id: lastAssistantIdRef.current ?? Date.now().toString(),
+          role: 'assistant',
+          content: data.content ?? '',
+          tools_used: data.tool_calls?.map((tc) => tc.name),
+          timestamp: new Date(),
+        }
+        return [...prev, assistantMsg]
       })
     })
 
-    socket.on('agent:end', () => {
+    // Hermes 'end' event — agent finished
+    socket.on('end', (data: any) => {
+      console.log('[chat] session end:', data)
       setLoading(false)
+      lastAssistantIdRef.current = null
     })
 
     socket.on('connect', () => console.log('[chat] socket connected'))
     socket.on('disconnect', () => console.log('[chat] socket disconnected'))
 
     return () => {
-      socket.off('agent:output')
-      socket.off('agent:end')
+      socket.off('start')
+      socket.off('output')
+      socket.off('end')
       socket.disconnect()
     }
   }, [])
@@ -80,6 +117,9 @@ export function Chat() {
     setLoading(true)
     setError(null)
 
+    // Set a placeholder assistant id for streaming to target
+    lastAssistantIdRef.current = (Date.now() + 1).toString()
+
     try {
       const res = await fetch('/api/agent/run', {
         method: 'POST',
@@ -94,7 +134,7 @@ export function Chat() {
 
       const data = await res.json()
       const assistantMsg: Message = {
-        id: (Date.now() + 1).toString(),
+        id: lastAssistantIdRef.current,
         role: 'assistant',
         content: data.choices?.[0]?.message?.content || '(no content)',
         tools_used: undefined,
@@ -105,6 +145,7 @@ export function Chat() {
       setError(err.message)
     } finally {
       setLoading(false)
+      lastAssistantIdRef.current = null
     }
   }, [input, loading])
 
@@ -129,7 +170,7 @@ export function Chat() {
           <div className={styles.empty}>
             <p>Ask me anything — I'll use tools to help you.</p>
             <p className={styles.hint}>
-              Try: "List the files in /tmp" or "Search the web for nanobot github"
+              Try: &quot;List the files in /tmp&quot; or &quot;Search the web for nanobot github&quot;
             </p>
           </div>
         )}

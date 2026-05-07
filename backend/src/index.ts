@@ -3,7 +3,7 @@ import cors from 'cors'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { markdownRouter } from './routes/markdown.js'
-import { agentRouter, agentEvents } from './routes/agent.js'
+import { agentRouter } from './routes/agent.js'
 
 const app = express()
 const httpServer = createServer(app)
@@ -22,27 +22,19 @@ app.use(express.json())
 app.use('/api/files', markdownRouter)
 app.use('/api/agent', agentRouter)
 
-// Socket.io
+// Socket.IO — expose io globally so the /api/agent/forward route can use it
+// to relay Hermes stream events to connected React clients.
 io.on('connection', (socket) => {
-  console.log('Client connected:', socket.id)
-
+  console.log('[socket] client connected:', socket.id)
   socket.on('disconnect', () => {
-    console.log('Client disconnected:', socket.id)
+    console.log('[socket] client disconnected:', socket.id)
   })
-
-  // Forward agent events to all connected clients
-  agentEvents.on('agent:start', (data) => socket.emit('agent:start', data))
-  agentEvents.on('agent:output', (data) => socket.emit('agent:output', data))
-  agentEvents.on('agent:end', (data) => socket.emit('agent:end', data))
 })
+;(global as any).__io = io
 
 const PORT = process.env.PORT || 3001
-
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
-
-// Expose io globally for the agent forward route
-;(global as any).__io = io
 
 export { io }
